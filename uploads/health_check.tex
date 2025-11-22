@@ -1,0 +1,55 @@
+\documentclass[12pt, a4paper]{article}
+
+% 1. Essential Packages
+% We include these to ensure the package system is functioning correctly.
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath} % Tests math typesetting
+\usepackage{xcolor}  % Tests color drivers
+\usepackage{geometry} % Tests page layout processing
+
+% Setting simple margins
+\geometry{top=2cm, bottom=2cm, left=2cm, right=2cm}
+
+\title{API Health Check}
+\author{System Diagnostics}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+% ---------------------------------------------------------
+% SECTION 1: Text Rendering
+% ---------------------------------------------------------
+\section{System Status: \textcolor{green!60!black}{ONLINE}}
+
+If you can read this PDF, the compilation engine is successfully processing input.
+This document verifies text rendering, \textbf{bold formatting}, \textit{italics}, and \textsc{Small Caps}.
+
+% ---------------------------------------------------------
+% SECTION 2: Math Engine Verification
+% ---------------------------------------------------------
+\section{Math Engine Test}
+Verifying the ability to render mathematical symbols and equations:
+
+Inline math check: $e^{i\pi} + 1 = 0$
+
+Display equation check (Gaussian integral):
+\begin{equation}
+    \int_{-\infty}^{\infty} e^{-x^2} \, dx = \sqrt{\pi}
+\end{equation}
+
+% ---------------------------------------------------------
+% SECTION 3: Graphical Layout
+% ---------------------------------------------------------
+\section{Layout \& Geometry}
+The line below is generated using drawing commands. It verifies that the graphical driver is working without requiring external image files (which can cause "File Not Found" errors in simple health checks).
+
+\vspace{1em}
+\noindent\rule{\textwidth}{2pt}
+
+\begin{center}
+    \footnotesize \emph{Generated at: \today}
+\end{center}
+
+\end{document}

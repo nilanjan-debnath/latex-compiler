@@ -1,0 +1,17 @@
+services:
+  api:
+    container_name: latex-compiler
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount application code for live reloading
+      - ./app:/project/app
+      - ./logs:/project/logs
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 512M
