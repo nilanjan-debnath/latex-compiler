@@ -61,19 +61,9 @@ WORKDIR /project
 ENV PYTHONUNBUFFERED=1
 
 # Install only the runtime OS dependencies needed.
-RUN apk add --no-cache curl wget
-
-# Install Tectonic based on the target architecture.
-ARG TARGETARCH
-RUN case "$TARGETARCH" in \
-      amd64) url="https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-musl.tar.gz" ;; \
-      arm64) url="https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-aarch64-unknown-linux-musl.tar.gz" ;; \
-      *) echo "Unsupported architecture: $TARGETARCH" && exit 1 ;; \
-    esac && \
-    wget "$url" -O tectonic.tar.gz && \
-    tar -xvzf tectonic.tar.gz && \
-    mv tectonic /usr/local/bin/ && \
-    rm tectonic.tar.gz
+RUN apk add --no-cache \
+    tectonic \
+    curl
 
 # Create a non-root user and group for security.
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
