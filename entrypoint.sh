@@ -12,7 +12,7 @@ WORKERS=${WORKERS:-$DEFAULT_WORKERS}
 
 # Start the FastAPI server
 echo "🚀 Starting FastAPI server with $WORKERS workers..."
-exec opentelemetry-instrument gunicorn \
+exec gunicorn \
     --workers $WORKERS \
     --worker-class uvicorn.workers.UvicornWorker \
     --bind 0.0.0.0:8000 \
