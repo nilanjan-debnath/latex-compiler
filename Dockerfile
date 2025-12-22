@@ -37,7 +37,7 @@ COPY . .
 
 # Install the project itself using the frozen lock file to ensure reproducible builds
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-default-groups --group otel-deploy
+    uv sync --frozen --no-default-groups
 
 #########################
 # ---- Final Stage ---- #
