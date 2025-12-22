@@ -9,13 +9,11 @@ dependencies = [
     "fastapi>=0.121.1",
     "gunicorn>=23.0.0",
     "loguru>=0.7.3",
-    "opentelemetry-distro>=0.59b0",
-    "opentelemetry-exporter-otlp>=1.38.0",
-    "opentelemetry-instrumentation-system-metrics>=0.59b0",
     "pydantic>=2.12.4",
     "pydantic-settings>=2.11.0",
     "python-multipart>=0.0.20",
     "redis[hiredis]>=7.0.1",
+    "sentry-sdk>=2.48.0",
     "slowapi>=0.1.9",
     "uvicorn>=0.38.0",
     "uvloop>=0.22.1",
@@ -24,21 +22,5 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pre-commit>=4.4.0",
-]
-otel = [
-    "opentelemetry-instrumentation-asyncio==0.59b0",
-    "opentelemetry-instrumentation-click==0.59b0",
-    "opentelemetry-instrumentation-dbapi==0.59b0",
-    "opentelemetry-instrumentation-fastapi==0.59b0",
-    "opentelemetry-instrumentation-grpc==0.59b0",
-    "opentelemetry-instrumentation-logging==0.59b0",
-    "opentelemetry-instrumentation-redis==0.59b0",
-    "opentelemetry-instrumentation-requests==0.59b0",
-    "opentelemetry-instrumentation-sqlite3==0.59b0",
-    "opentelemetry-instrumentation-starlette==0.59b0",
-    "opentelemetry-instrumentation-threading==0.59b0",
-    "opentelemetry-instrumentation-tortoiseorm==0.59b0",
-    "opentelemetry-instrumentation-urllib==0.59b0",
-    "opentelemetry-instrumentation-urllib3==0.59b0",
-    "opentelemetry-instrumentation-wsgi==0.59b0",
+    "ruff>=0.14.10",
 ]
