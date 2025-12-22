@@ -13,7 +13,7 @@ from app.core.config import settings
 
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
-LOGGER_NAME = "playwright-webrun"
+LOGGER_NAME = "latex-compiler"
 
 
 def replace_name_filter(record):
