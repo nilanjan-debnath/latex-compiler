@@ -1,6 +1,6 @@
 services:
   api:
-    container_name: latex-compiler
+    container_name: latex-compiler-texlive
     build: .
     env_file:
       - .env

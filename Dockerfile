@@ -7,75 +7,66 @@ FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv_builder
 ###########################
 # ---- Builder Stage ---- #
 ###########################
-# This stage installs dependencies into a virtual environment.
-FROM python:${PYTHON_VERSION}-alpine AS builder
+# Use slim (Debian/glibc) for compatibility with texlive (Ubuntu-based)
+FROM python:${PYTHON_VERSION}-slim AS builder
 
 WORKDIR /project
 
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
-# Install the uv tool for Python package management.
+# Install uv from the builder stage
 COPY --from=uv_builder /uv /uvx /bin/
 
-# Install build dependencies required to compile packages like psutil.
-RUN apk add --no-cache \
-    gcc \
-    python3-dev \
-    musl-dev \
-    linux-headers \
-    make
-
-# Copy dependency definition files to leverage Docker layer caching.
+# Copy dependency files for layer caching
 COPY pyproject.toml uv.lock ./
 
-# Create a virtual environment and install dependencies in one step.
+# Create venv and install dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --no-install-project --no-default-groups
 
-# Copy the rest of the application source code.
+# Copy source code
 COPY . .
 
-# Install the project itself using the frozen lock file to ensure reproducible builds
+# Install the project
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-default-groups
 
 #########################
 # ---- Final Stage ---- #
 #########################
-# This stage creates the lean, secure final image.
-FROM python:${PYTHON_VERSION}-alpine AS runtime
+FROM texlive/texlive:latest AS runtime
 
 WORKDIR /project
 
-# Set environment variable for unbuffered output.
 ENV PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Install only the runtime OS dependencies needed.
-RUN apk add --no-cache \
-    tectonic \
-    curl
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user and group for security.
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+# Create a non-root user
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 
 # Copy application files including virtual environment from the builder stage.
-COPY --from=builder --chown=appuser:appgroup /project .
+COPY --from=builder /project .
 
-# Add the virtual environment's bin directory to the PATH.
+# Add venv to PATH
 ENV PATH="/project/.venv/bin:$PATH"
 
-# Make the entrypoint script executable.
+# Make entrypoint executable
 RUN chmod +x ./entrypoint.sh
 
-# Switch to the non-root user.
+# Switch to non-root user
 USER appuser
 
-# Expose the application port.
+# Expose port
 EXPOSE 8000
 
-# Set the container's entrypoint.
+# Set entrypoint
 ENTRYPOINT ["./entrypoint.sh"]
 
-# Add a health check to monitor the application's status.
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+# Health check
+HEALTHCHECK --interval=60s --timeout=10s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:8000/healthz || exit 1

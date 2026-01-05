@@ -1,0 +1,80 @@
+\documentclass{article}
+
+% Packages:
+\usepackage[
+    ignoreheadfoot,
+    top=2 cm,
+    bottom=2 cm,
+    left=2 cm,
+    right=2 cm,
+    footskip=1.0 cm,
+]{geometry}
+\usepackage{titlesec}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage[dvipsnames]{xcolor}
+\definecolor{primaryColor}{RGB}{0, 79, 144}
+\usepackage{enumitem}
+\usepackage{fontawesome5}
+\usepackage{amsmath}
+
+\usepackage[pscoord]{eso-pic}
+\usepackage{calc}
+\usepackage{bookmark}
+\usepackage{changepage}
+\usepackage{paracol}
+\usepackage{ifthen}
+\usepackage{needspace}
+\usepackage{iftex}
+
+\ifPDFTeX
+    \input{glyphtounicode}
+    \pdfgentounicode=1
+    \usepackage[T1]{fontenc}
+    \usepackage[utf8]{inputenc}
+    \usepackage{lmodern}
+\fi
+
+\title{Advanced LaTeX Document Test}
+\author{Test User}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Testing Various Packages}
+
+\subsection{Color Test}
+This text uses the \textcolor{primaryColor}{primary color} we defined.
+
+\subsection{Math Test with amsmath}
+Here's a complex equation:
+\begin{equation}
+    \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+\end{equation}
+
+\subsection{Table Test with tabularx}
+\begin{tabularx}{\textwidth}{|X|X|}
+\hline
+Column 1 & Column 2 \\
+\hline
+Data 1 & Data 2 \\
+Data 3 & Data 4 \\
+\hline
+\end{tabularx}
+
+\subsection{List Test with enumitem}
+\begin{itemize}[label=\textcolor{primaryColor}{\faCheckCircle}]
+    \item First item with custom bullet
+    \item Second item
+    \item Third item
+\end{itemize}
+
+\subsection{Title Formatting with titlesec}
+The section titles are formatted using titlesec package.
+
+\section{Conclusion}
+This document tests multiple advanced LaTeX packages including geometry, xcolor, amsmath, tabularx, fontawesome5, and more.
+
+\end{document}

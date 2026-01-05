@@ -1,12 +1,12 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
 from app.core.config import settings
 from app.core.ratelimiter import limiter
 from app.core.logger import logger, LoggingMiddleware
-from app.compiler.v1.services import compile_tex_to_pdf
+from app.compiler.v1.services import compile_tex_to_pdf, clean_files
 from app.compiler.v1.controllers import router as compiler_v1_router
 
 
@@ -58,9 +58,20 @@ async def root(request: Request):
 
 @limiter.limit(settings.ratelimit_guest)
 @app.get(path="/healthz", status_code=status.HTTP_200_OK)
-async def health_check(request: Request):
-    tex_path = "uploads/health_check.tex"
-    _result_path, success = await compile_tex_to_pdf(tex_path)
-    if not success:
-        return {"status": "error"}
-    return {"status": "ok"}
+async def health_check(request: Request, background_tasks: BackgroundTasks):
+    tex_path = "uploads/test.tex"
+    try:
+        _result_path, success = await compile_tex_to_pdf(tex_path)
+        background_tasks.add_task(clean_files, tex_path, False)
+        if not success:
+            return {"status": "error"}
+        return {"status": "ok"}
+    except HTTPException as e:
+        if tex_path:
+            clean_files(tex_path=tex_path, with_tex=False)
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Server Error: {str(e)}",
+        )

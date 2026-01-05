@@ -1,12 +1,12 @@
 import os
-import glob
 import uuid
 import asyncio
 import aiofiles
+from pathlib import Path
 from app.core.logger import logger
 
-UPLOAD_DIRECTORY = "uploads"
-os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
+UPLOAD_DIRECTORY = Path(__file__).parent.parent.parent.parent / "uploads"
+UPLOAD_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
 
 async def create_tex_file(content: bytes | str, filename: str | None) -> str:
@@ -22,26 +22,28 @@ async def create_tex_file(content: bytes | str, filename: str | None) -> str:
 
 
 async def compile_tex_to_pdf(tex_file_path: str) -> tuple[str, bool]:
-    """Compile a .tex file into a .pdf using tectonic asynchronously."""
-    # Ensure tex_file_path is valid before proceeding
+    """Compile a .tex file into a .pdf using latexmk asynchronously."""
     if not tex_file_path or not os.path.exists(tex_file_path):
         logger.error(f"tex_file_path is invalid or does not exist: {tex_file_path}")
         raise FileNotFoundError(f"TEX file not found: {tex_file_path}")
 
+    # Convert to absolute paths
+    tex_file_path = os.path.abspath(tex_file_path)
     output_dir = os.path.dirname(tex_file_path)
 
+    pdf_path = tex_file_path.rsplit(".tex", 1)[0] + ".pdf"
+    log_path = tex_file_path.rsplit(".tex", 1)[0] + ".log"
+
     cmd = [
-        "tectonic",
-        "-X",
-        "compile",
-        "--keep-logs",
-        "--outdir",
-        output_dir,
-        tex_file_path,
+        "latexmk",
+        "-pdf",
+        "-interaction=nonstopmode",
+        f"-output-directory={output_dir}",
+        tex_file_path,  # Full absolute path
     ]
 
     try:
-        # Run tectonic asynchronously
+        # No cwd - use absolute paths instead
         process = await asyncio.create_subprocess_exec(
             *cmd,
             stdout=asyncio.subprocess.PIPE,
@@ -49,19 +51,14 @@ async def compile_tex_to_pdf(tex_file_path: str) -> tuple[str, bool]:
         )
         stdout, stderr = await process.communicate()
 
-        # Check if the PDF was actually created
-        pdf_path = tex_file_path.replace(".tex", ".pdf")
-        log_path = tex_file_path.replace(".tex", ".log")
         if process.returncode == 0 and os.path.exists(pdf_path):
             logger.info(f"Compilation successful: {pdf_path}")
             return pdf_path, True
         else:
             logger.error(f"Compilation failed for {tex_file_path}")
-            # Attempt to log stderr if needed, or return the internal log file
             if stderr:
-                logger.warning(f"Tectonic Stderr: {stderr.decode()}")
+                logger.warning(f"latexmk stderr: {stderr.decode(errors='replace')}")
 
-            # If the .log file wasn't generated (rare crash), write the stderr to it
             if not os.path.exists(log_path):
                 async with aiofiles.open(log_path, "wb") as f:
                     await f.write(stderr + stdout)
@@ -70,13 +67,29 @@ async def compile_tex_to_pdf(tex_file_path: str) -> tuple[str, bool]:
 
     except Exception as e:
         logger.warning(f"Exception compiling {tex_file_path}: {e}")
-        raise e
+        raise
 
 
-def clean_files(tex_path: str) -> None:
+def clean_files(tex_path: str, with_tex: bool = True) -> None:
     """Remove LaTeX intermediate files."""
-    base = tex_path.rpartition(".")[0].strip()
-    for ext in (".aux", ".log", ".out", ".fls", ".fdb_latexmk", ".tex", ".pdf"):
-        for file in glob.glob(base + ext):
-            os.remove(file)
+    base = tex_path.rsplit(".tex", 1)[0] if tex_path.endswith(".tex") else tex_path
+    extensions = (
+        ".aux",
+        ".log",
+        ".out",
+        ".fls",
+        ".fdb_latexmk",
+        ".pdf",
+        ".toc",
+        ".lof",
+        ".lot",
+        ".synctex.gz",
+    )
+    if with_tex:
+        extensions += (".tex",)
+    for ext in extensions:
+        file_path = base + ext
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            logger.debug(f"Removed: {file_path}")
     logger.debug(f"Cleaned up files for base: {base}")
