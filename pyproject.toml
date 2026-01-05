@@ -17,6 +17,7 @@ dependencies = [
     "slowapi>=0.1.9",
     "uvicorn>=0.38.0",
     "uvloop>=0.22.1",
+    "httptools>=0.6.0",
 ]
 
 [dependency-groups]

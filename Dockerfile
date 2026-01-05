@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Set versions as arguments
 ARG PYTHON_VERSION=3.12
 ARG UV_VERSION=0.8.3
@@ -34,16 +35,26 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 #########################
 # ---- Final Stage ---- #
 #########################
-FROM texlive/texlive:latest AS runtime
+FROM python:${PYTHON_VERSION}-slim AS runtime
 
 WORKDIR /project
 
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install runtime dependencies
+# Install texlive and runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    # Add texlive packages you need:
+    texlive-latex-base \
+    texlive-latex-extra \
+    texlive-latex-recommended \
+    texlive-fonts-recommended \
+    texlive-fonts-extra \
+    texlive-xetex \
+    texlive-luatex \
+    texlive-science \
+    latexmk \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user
@@ -51,6 +62,9 @@ RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 
 # Copy application files including virtual environment from the builder stage.
 COPY --from=builder /project .
+
+# Give appuser full ownership of the directory
+RUN chown -R appuser:appgroup /project
 
 # Add venv to PATH
 ENV PATH="/project/.venv/bin:$PATH"
